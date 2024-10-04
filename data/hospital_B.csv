@@ -1,0 +1,13 @@
+zipcode, age, nationality, condition
+606**, < 35, *, COVID
+606**, < 35, *, Tuberculosis
+606**, < 35, *, Flu
+606**, < 35, *, Tuberculosis
+606**, < 35, *, Cancer
+606**, < 35, *, Cancer
+606**, >= 35, *, Cancer
+606**, >= 35, *, Cancer
+606**, >= 35, *, Cancer
+606**, >= 35, *, Tuberculosis
+606**, >= 35, *, Viral Infection
+606**, >= 35, *, Viral Infection

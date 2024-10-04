@@ -1,0 +1,166 @@
+name: Autograding
+
+on:
+  push:
+    branches:
+      - main
+
+permissions:
+  contents: write
+  
+jobs:
+  check:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
+
+      - name: Initialize messages.txt
+        run: echo "" > messages.txt
+
+      # Check for commits
+      - name: Check for commits
+        id: check_commits
+        run: |
+          COMMIT_COUNT=$(git rev-list --count --all)
+          echo "commit_count=$COMMIT_COUNT" >> $GITHUB_ENV
+
+          if [ "$COMMIT_COUNT" -lt 3 ]; then
+            echo "❌ Fewer than 3 commits found. You may want to commit more often to ensure you don't lose any progress" >> messages.txt
+          fi
+
+      # Check for valid event
+      - name: Run build or test steps for direct push to main
+        if: github.event.pull_request == null  # Only run for direct commits, not PR merges
+        run: |
+          echo "❌ Direct commit detected on main branch. Please create a PR to main and then merge it."  >> messages.txt
+
+      # Check for required files
+      - name: Check for required files
+        run: |
+          PDF_FILES=$(find . -name "*.pdf")
+          NOTEBOOK_FILES=$(find . -name "*.ipynb")
+          QM_FILES=$(find . -name "*.qmd")
+
+          if [[ -z "$PDF_FILES" ]]; then
+            echo "❌ No PDF files found. PDF is needed to submit assignment." >> messages.txt
+          fi
+
+          if [[ -z "$NOTEBOOK_FILES" && -z "$QM_FILES" ]]; then
+            echo "❌ No .ipynb or .qm files found. At least one is necessary for assignment." >> messages.txt
+            exit 1
+          fi
+
+          if [[ -n "$PDF_FILES" && (-n "$NOTEBOOK_FILES" || -n "$QM_FILES") && -n "$IMAGE_FILES" ]]; then
+            echo "✅ Required files found: PDF, at least one of .ipynb or .qmd" >> messages.txt
+          fi
+
+      # Install dependencies
+      - name: Install dependencies
+        run: |
+          pip install pylint nbqa
+
+      # Run pylint on .py files if they exist
+      - name: Run pylint on Python files
+        id: pylint_py
+        run: |
+          PY_FILES=$(find . -name "*.py")
+          if [ -n "$PY_FILES" ]; then
+            pylint_output=$(pylint $PY_FILES --output-format=parseable || true)
+            echo "$pylint_output" > pylint_report_py.txt
+            if [ -n "$pylint_output" ]; then
+              pylint_score=$(echo "$pylint_output" | python3 -c "import sys; print([line.split()[6].split('/')[0] for line in sys.stdin if 'rated at' in line][0])" 2>/dev/null)
+            fi
+
+            if [ -z "$pylint_output" ]; then
+              echo "❌ Pylint returned no output." >> messages.txt
+            fi
+
+            if [ -z "$pylint_score" ]; then
+              echo "❌ Pylint score could not be determined." >> messages.txt
+            fi
+
+            pylint_score_float=$(printf "%.2f" "$pylint_score")
+            echo "pylint_score_float=$pylint_score_float" >> $GITHUB_ENV
+          else
+            echo "⚠ No Python files found for linting." >> messages.txt
+          fi
+
+      # Run nbqa on .ipynb files if they exist
+      - name: Run nbqa on Jupyter Notebooks
+        id: nbqa
+        run: |
+          NOTEBOOK_FILES=$(find . -name "*.ipynb")
+          if [ -n "$NOTEBOOK_FILES" ]; then
+            nbqa_output=$(nbqa pylint $NOTEBOOK_FILES --disable=W0106,E0401 --output-format=parseable || true)
+            echo "$nbqa_output" > nbqa_report.txt
+            if [ -n "$nbqa_output" ]; then
+              nbqa_score=$(echo "$nbqa_output" | python3 -c "import sys; print([line.split()[6].split('/')[0] for line in sys.stdin if 'rated at' in line][0])" 2>/dev/null)
+            fi
+            if [ -z "$nbqa_output" ]; then
+              echo "❌ nbqa returned no output." >> messages.txt
+            fi
+
+            if [ -z "$nbqa_score" ]; then
+              echo "❌ nbqa score could not be determined." >> messages.txt
+            fi
+
+            nbqa_score_float=$(printf "%.2f" "$nbqa_score")
+            echo "nbqa_score_float=$nbqa_score_float" >> $GITHUB_ENV
+          else
+            echo "⚠️ No Jupyter Notebook files found for linting." >> messages.txt
+          fi
+
+      # Output results
+      - name: Output linting results
+        run: |
+          echo -e "### Pylint Report\n" >> messages.txt
+          if [ -f pylint_report_py.txt ]; then
+            cat pylint_report_py.txt >> messages.txt
+          else
+            echo "⚠️ No Pylint report found." >> messages.txt
+          fi
+
+          echo -e "### nbqa Report\n" >> messages.txt
+          if [ -f nbqa_report.txt ]; then
+            cat nbqa_report.txt >> messages.txt
+          else
+            echo "⚠️ No nbqa report found." >> messages.txt
+          fi
+
+          # Combine scores and evaluate
+          if [ -n "$pylint_score_float" ]; then
+            if (( $(echo "$pylint_score_float < 7.99" | bc -l) )); then
+              echo "❌ Pylint score indicates issues. Score = $pylint_score_float" >> messages.txt
+            else
+              echo "✅ Pylint score is acceptable. Score = $pylint_score_float" >> messages.txt
+            fi
+          fi
+          
+          if [ -n "$nbqa_score_float" ]; then
+            if (( $(echo "$nbqa_score_float < 7.99" | bc -l) )); then
+              echo "❌ nbqa score indicates issues. Score = $nbqa_score_float" >> messages.txt
+            else
+              echo "✅ nbqa score is acceptable. Score = $nbqa_score_float" >> messages.txt
+            fi
+          fi
+      
+      - name: Output results
+        run: |
+          echo "All pre-checks completed. Please address any issues listed above and remember to turn in your work on Gradescope!" >> messages.txt
+
+      # Commit grading messages
+      - name: Commit grading messages
+        run: |
+          git config --local user.email "action@github.com"
+          git config --local user.name "GitHub Action"
+          git add messages.txt
+          if ! git diff --cached --quiet; then
+            git commit -m "Add grading messages"
+            git push
+          fi
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

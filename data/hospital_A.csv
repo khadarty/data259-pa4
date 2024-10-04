@@ -1,0 +1,13 @@
+zipcode, age, nationality, condition
+606**, < 30, *, COVID
+606**, < 30, *, Heart Disease
+606**, < 30, *, Viral Infection
+606**, < 30, *, Viral Infection
+606**, >= 40, *, Cancer
+606**, >= 40, *, Heart Disease
+606**, >= 40, *, Viral Infection
+606**, >= 40, *, Viral Infection
+606**, 3*, *, Cancer
+606**, 3*, *, Cancer
+606**, 3*, *, Cancer
+606**, 3*, *, Cancer
