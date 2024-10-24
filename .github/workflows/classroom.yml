@@ -1,4 +1,4 @@
-name: Autograding
+name: Auto-checking
 
 on:
   push:
@@ -32,11 +32,20 @@ jobs:
             echo "❌ Fewer than 3 commits found. You may want to commit more often to ensure you don't lose any progress" >> messages.txt
           fi
 
-      # Check for valid event
-      - name: Run build or test steps for direct push to main
-        if: github.event.pull_request == null  # Only run for direct commits, not PR merges
+      # Get the commit message
+      - name: Get commit message
+        id: commit_message
         run: |
-          echo "❌ Direct commit detected on main branch. Please create a PR to main and then merge it."  >> messages.txt
+          echo "COMMIT_MSG=$(git log -1 --pretty=%B)" >> $GITHUB_ENV
+
+      # Check if this is a merge commit (i.e., part of a PR)
+      - name: Check if the commit was a PR merge or direct commit
+        run: |
+          if [[ "${{ env.COMMIT_MSG }}" == *"Merge pull request"* ]]; then
+            echo "✅ This commit is a pull request merge."
+          else
+            echo "❌ Direct commit detected on main branch."
+          fi
 
       # Check for required files
       - name: Check for required files
@@ -46,11 +55,11 @@ jobs:
           QM_FILES=$(find . -name "*.qmd")
 
           if [[ -z "$PDF_FILES" ]]; then
-            echo "❌ No PDF files found. PDF is needed to submit assignment." >> messages.txt
+            echo "❌ No PDF files found. PDF is needed to submit assignment to Gradescope." >> messages.txt
           fi
 
           if [[ -z "$NOTEBOOK_FILES" && -z "$QM_FILES" ]]; then
-            echo "❌ No .ipynb or .qm files found. At least one is necessary for assignment." >> messages.txt
+            echo "❌ No .ipynb or .qmd files found. At least one is necessary to complete your assignment." >> messages.txt
             exit 1
           fi
 
@@ -64,54 +73,93 @@ jobs:
           pip install pylint nbqa
 
       # Run pylint on .py files if they exist
-      - name: Run pylint on Python files
+      - name: Check for Python files and run pylint
         id: pylint_py
         run: |
-          PY_FILES=$(find . -name "*.py")
-          if [ -n "$PY_FILES" ]; then
-            pylint_output=$(pylint $PY_FILES --output-format=parseable || true)
-            echo "$pylint_output" > pylint_report_py.txt
-            if [ -n "$pylint_output" ]; then
-              pylint_score=$(echo "$pylint_output" | python3 -c "import sys; print([line.split()[6].split('/')[0] for line in sys.stdin if 'rated at' in line][0])" 2>/dev/null)
-            fi
-
-            if [ -z "$pylint_output" ]; then
-              echo "❌ Pylint returned no output." >> messages.txt
-            fi
-
-            if [ -z "$pylint_score" ]; then
-              echo "❌ Pylint score could not be determined." >> messages.txt
-            fi
-
-            pylint_score_float=$(printf "%.2f" "$pylint_score")
-            echo "pylint_score_float=$pylint_score_float" >> $GITHUB_ENV
-          else
+          # Find all .py files and handle spaces in filenames
+          echo "Looking for Python files..." >> messages.txt
+          PY_FILES=$(find . -name "*.py" -not -path "*/.ipynb_checkpoints/*")
+          
+          # Debugging: Output the found Python files
+          if [ -z "$PY_FILES" ]; then
             echo "⚠ No Python files found for linting." >> messages.txt
+          else
+            echo "Found Python files:" >> messages.txt
+            echo "$PY_FILES" >> messages.txt
+
+            # Check for spaces in filenames
+            if echo "$PY_FILES" | grep -q " "; then
+              echo "⚠️ Warning: Please avoid using spaces in file names. Spaces can cause issues during linting." >> messages.txt
+            fi
+            
+            # Run pylint on each file separately, ensuring proper handling of filenames
+            while IFS= read -r file; do
+              echo "Running pylint on \"$file\"" >> messages.txt
+              pylint "$file" --disable=W0106,E0401 --output-format=parseable >> pylint_report_py.txt || true
+            done <<< "$PY_FILES"
+            
+            # Debugging: Show pylint output
+            echo "Pylint output:"
+            cat pylint_report_py.txt
+
+            if [ ! -s pylint_report_py.txt ]; then
+              echo "❌ Pylint returned no output." >> messages.txt
+            else
+              echo "✅ Pylint ran successfully." >> messages.txt
+              pylint_score=$(grep -oP '(?<=Your code has been rated at )\d+(\.\d+)?(?=/)' pylint_report_py.txt | head -n 1)
+              if [ -z "$pylint_score" ]; then
+                echo "❌ Pylint score could not be determined." >> messages.txt
+              else
+                pylint_score_float=$(printf "%.2f" "$pylint_score")
+                echo "pylint_score_float=$pylint_score_float" >> $GITHUB_ENV
+                echo "✅ Pylint score is $pylint_score_float." >> messages.txt
+              fi
+            fi
           fi
 
-      # Run nbqa on .ipynb files if they exist
-      - name: Run nbqa on Jupyter Notebooks
+      # Check for .ipynb files and run nbqa
+      - name: Check for Notebook files and run nbqa
         id: nbqa
         run: |
-          NOTEBOOK_FILES=$(find . -name "*.ipynb")
-          if [ -n "$NOTEBOOK_FILES" ]; then
-            nbqa_output=$(nbqa pylint $NOTEBOOK_FILES --disable=W0106,E0401 --output-format=parseable || true)
-            echo "$nbqa_output" > nbqa_report.txt
-            if [ -n "$nbqa_output" ]; then
-              nbqa_score=$(echo "$nbqa_output" | python3 -c "import sys; print([line.split()[6].split('/')[0] for line in sys.stdin if 'rated at' in line][0])" 2>/dev/null)
-            fi
-            if [ -z "$nbqa_output" ]; then
-              echo "❌ nbqa returned no output." >> messages.txt
-            fi
-
-            if [ -z "$nbqa_score" ]; then
-              echo "❌ nbqa score could not be determined." >> messages.txt
-            fi
-
-            nbqa_score_float=$(printf "%.2f" "$nbqa_score")
-            echo "nbqa_score_float=$nbqa_score_float" >> $GITHUB_ENV
-          else
+          # Find all .ipynb files excluding .ipynb_checkpoints
+          echo "Looking for Notebook files..." >> messages.txt
+          NOTEBOOK_FILES=$(find . -name "*.ipynb" -not -path "*/.ipynb_checkpoints/*")
+          
+          # Debugging: Output the found notebook files
+          if [ -z "$NOTEBOOK_FILES" ]; then
             echo "⚠️ No Jupyter Notebook files found for linting." >> messages.txt
+          else
+            echo "Found Notebook files:" >> messages.txt
+            echo "$NOTEBOOK_FILES" >> messages.txt
+
+            # Check for spaces in filenames
+            if echo "$NOTEBOOK_FILES" | grep -q " "; then
+              echo "⚠️ Warning: Please avoid using spaces in file names. Spaces can cause issues during linting." >> messages.txt
+            fi
+            
+            # Run nbqa on each notebook file, ensuring proper handling of filenames
+            while IFS= read -r notebook; do
+              echo "Running nbqa pylint on \"$notebook\"" >> messages.txt
+              nbqa pylint "$notebook" --disable=W0106,E0401 --output-format=parseable >> nbqa_report.txt || true
+            done <<< "$NOTEBOOK_FILES"
+            
+            # Debugging: Show nbqa output
+            echo "nbqa output:"
+            cat nbqa_report.txt
+
+            if [ ! -s nbqa_report.txt ]; then
+              echo "❌ nbqa returned no output." >> messages.txt
+            else
+              echo "✅ nbqa ran successfully." >> messages.txt
+              nbqa_score=$(grep -oP '(?<=Your code has been rated at )\d+(\.\d+)?(?=/)' nbqa_report.txt | head -n 1)
+              if [ -z "$nbqa_score" ]; then
+                echo "❌ nbqa score could not be determined." >> messages.txt
+              else
+                nbqa_score_float=$(printf "%.2f" "$nbqa_score")
+                echo "nbqa_score_float=$nbqa_score_float" >> $GITHUB_ENV
+                echo "✅ nbqa score is $nbqa_score_float." >> messages.txt
+              fi
+            fi
           fi
 
       # Output results
