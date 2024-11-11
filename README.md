@@ -16,7 +16,7 @@ When you are finished, please render your document to a PDF and upload your assi
 
 ## $k$-anonymity
 
-[$k$-anonymity](https://en.wikipedia.org/wiki/K-anonymity) is a privacy concept - a dataset satisfies $k$-anonymity if every individual appearing in the dataset cannot be distinguished from at least $k-1$ other individuals in the dataset. $k$-anonymization can prevent re-identification attack since the attackers cannot identify a single individual out of $k$ records that all share the same [quasi-identifiers](https://en.wikipedia.org/wiki/Quasi-identifier) attributes. However, one of the biggest caveat of $k$-anonymization is that the privacy protection it offers can degrade drastically when dealing with *multiple releases*.
+[k-anonymity](https://en.wikipedia.org/wiki/K-anonymity) is a privacy concept - a dataset satisfies $k$-anonymity if every individual appearing in the dataset cannot be distinguished from at least $k-1$ other individuals in the dataset. $k$-anonymization can prevent re-identification attack since the attackers cannot identify a single individual out of $k$ records that all share the same [quasi-identifiers](https://en.wikipedia.org/wiki/Quasi-identifier) attributes. However, one of the biggest caveat of $k$-anonymization is that the privacy protection it offers can degrade drastically when dealing with *multiple releases*.
 
 Consider the following two datasets containing patients records from two different hospitals. In both datasets, zipcode, age, nationality are considered non-sensitive quasi-identifiers in this dataset, and condition is a sensitive attribute that should be excluded. The records from hospital A is 4-anonymous and the records from hospital B is 6-anonymous (double check this is the case).
 
