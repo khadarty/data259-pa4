@@ -123,7 +123,7 @@ def laplace_count(arr, epsilon):
 
 12. Compute the average laplace count (over 100 runs) for each epsilon. How much do they differ from the true count of the population? What is the standard deviation for each epsilon? What does this suggest about repeated queries under the differential privacy framework? How can a data curator/aggregator defend against repeated queries?
 
-13. Counting is useful, but sometimes we also need answers to other questions like mean and median. Implement the Laplace mechanism for computing the mean of a \textit{real valued array}. For this you will need to derive the sensitivity of the mean. That is, how much a query may vary given a difference of one entry. To do this, you will need to add as a parameter the allowable range of the list -- the maximum and minimum values that are allowable.
+13. Counting is useful, but sometimes we also need answers to other questions like mean and median. Implement the Laplace mechanism for computing the mean of a *real valued array*. For this you will need to derive the sensitivity of the mean. That is, how much a query may vary given a difference of one entry. To do this, you will need to add as a parameter the allowable range of the list -- the maximum and minimum values that are allowable.
 
 14. You should think carefully about how to handle data that is out of the specified range. Specifically, if you drop data outside of the range, how would that affect the sensitivity analysis? Could this inadvertently reveal information meant to remain private? Is there a better way to handle data that avoids these problems?
 
@@ -134,7 +134,7 @@ def laplace_mean(arr, epsilon, min_val, max_val):
     return
 ```
 
-15. Using the \texttt{age} column in the income data set (``income.csv"), plot the average difference between the true mean age and the differentially private mean age over 100 runs for feasible points in the grid formed by minimum and maximum age, using epsilon = 0.1. 
+15. Using the `age` column in the income data set (``income.csv"), plot the average difference between the true mean age and the differentially private mean age over 100 runs for feasible points in the grid formed by minimum and maximum age, using epsilon = 0.1. 
 
 ```python
 import pandas as pd
