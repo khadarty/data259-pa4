@@ -1,0 +1,67 @@
+
+Looking for Python files...
+⚠ No Python files found for linting.
+Looking for Notebook files...
+Found Notebook files:
+./pa4.ipynb
+Running nbqa pylint on "./pa4.ipynb"
+✅ nbqa ran successfully.
+✅ nbqa score is 6.62.
+### Pylint Report
+
+⚠️ No Pylint report found.
+### nbqa Report
+
+************* Module pa4
+pa4.ipynb:cell_1:1: [C0303(trailing-whitespace), ] Trailing whitespace
+pa4.ipynb:cell_6:8: [C0303(trailing-whitespace), ] Trailing whitespace
+pa4.ipynb:cell_6:11: [C0303(trailing-whitespace), ] Trailing whitespace
+pa4.ipynb:cell_6:18: [C0303(trailing-whitespace), ] Trailing whitespace
+pa4.ipynb:cell_8:1: [C0303(trailing-whitespace), ] Trailing whitespace
+pa4.ipynb:cell_8:2: [C0303(trailing-whitespace), ] Trailing whitespace
+pa4.ipynb:cell_10:1: [C0303(trailing-whitespace), ] Trailing whitespace
+pa4.ipynb:cell_10:2: [C0303(trailing-whitespace), ] Trailing whitespace
+pa4.ipynb:cell_15:3: [C0303(trailing-whitespace), ] Trailing whitespace
+pa4.ipynb:cell_15:6: [C0303(trailing-whitespace), ] Trailing whitespace
+pa4.ipynb:cell_15:12: [C0303(trailing-whitespace), ] Trailing whitespace
+pa4.ipynb:cell_15:13: [C0303(trailing-whitespace), ] Trailing whitespace
+pa4.ipynb:cell_18:7: [C0301(line-too-long), ] Line too long (153/100)
+pa4.ipynb:cell_18:8: [C0303(trailing-whitespace), ] Trailing whitespace
+pa4.ipynb:cell_18:9: [C0303(trailing-whitespace), ] Trailing whitespace
+pa4.ipynb:cell_18:10: [C0303(trailing-whitespace), ] Trailing whitespace
+pa4.ipynb:cell_20:17: [C0303(trailing-whitespace), ] Trailing whitespace
+pa4.ipynb:cell_20:32: [C0303(trailing-whitespace), ] Trailing whitespace
+pa4.ipynb:cell_20:33: [C0303(trailing-whitespace), ] Trailing whitespace
+pa4.ipynb:cell_20:36: [C0303(trailing-whitespace), ] Trailing whitespace
+pa4.ipynb:cell_1:0: [C0114(missing-module-docstring), ] Missing module docstring
+pa4.ipynb:cell_4:1: [W0104(pointless-statement), ] Statement seems to have no effect
+pa4.ipynb:cell_5:1: [W0104(pointless-statement), ] Statement seems to have no effect
+pa4.ipynb:cell_6:1: [C0116(missing-function-docstring), simulate] Missing function or method docstring
+pa4.ipynb:cell_6:1: [W0621(redefined-outer-name), simulate] Redefining name 'percentage' from outer scope (line 53)
+pa4.ipynb:cell_7:1: [C0116(missing-function-docstring), calc_ep] Missing function or method docstring
+pa4.ipynb:cell_7:1: [W0621(redefined-outer-name), calc_ep] Redefining name 'percentage' from outer scope (line 53)
+pa4.ipynb:cell_9:4: [C0103(invalid-name), ] Constant name "percentage" doesn't conform to UPPER_CASE naming style
+pa4.ipynb:cell_12:1: [C0116(missing-function-docstring), query] Missing function or method docstring
+pa4.ipynb:cell_13:1: [W0404(reimported), ] Reimport 'numpy' (imported line 3)
+pa4.ipynb:cell_13:1: [C0413(wrong-import-position), ] Import "import numpy as np" should be placed at the top of the module
+pa4.ipynb:cell_15:1: [C0116(missing-function-docstring), laplace_count] Missing function or method docstring
+pa4.ipynb:cell_15:1: [W0621(redefined-outer-name), laplace_count] Redefining name 'epsilon' from outer scope (line 219)
+pa4.ipynb:cell_15:9: [W0621(redefined-outer-name), laplace_count] Redefining name 'noisy' from outer scope (line 231)
+pa4.ipynb:cell_16:2: [C0103(invalid-name), ] Constant name "percentage" doesn't conform to UPPER_CASE naming style
+pa4.ipynb:cell_16:3: [C0103(invalid-name), ] Constant name "npop" doesn't conform to UPPER_CASE naming style
+pa4.ipynb:cell_16:4: [C0103(invalid-name), ] Constant name "nsims" doesn't conform to UPPER_CASE naming style
+pa4.ipynb:cell_19:1: [C0116(missing-function-docstring), laplace_mean] Missing function or method docstring
+pa4.ipynb:cell_19:1: [W0621(redefined-outer-name), laplace_mean] Redefining name 'epsilon' from outer scope (line 219)
+pa4.ipynb:cell_19:7: [W0621(redefined-outer-name), laplace_mean] Redefining name 'noisy' from outer scope (line 231)
+pa4.ipynb:cell_20:1: [W0404(reimported), ] Reimport 'pandas' (imported line 2)
+pa4.ipynb:cell_20:1: [C0413(wrong-import-position), ] Import "import pandas as pd" should be placed at the top of the module
+pa4.ipynb:cell_20:14: [C0103(invalid-name), ] Constant name "epsilon" doesn't conform to UPPER_CASE naming style
+pa4.ipynb:cell_20:15: [C0103(invalid-name), ] Constant name "nruns" doesn't conform to UPPER_CASE naming style
+pa4.ipynb:cell_13:1: [C0412(ungrouped-imports), ] Imports from package numpy are not grouped
+pa4.ipynb:cell_20:1: [C0412(ungrouped-imports), ] Imports from package pandas are not grouped
+
+-----------------------------------
+Your code has been rated at 6.62/10
+
+❌ nbqa score indicates issues. Score = 6.62
+All pre-checks completed. Please address any issues listed above and remember to turn in your work on Gradescope!
